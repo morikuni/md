@@ -25,6 +25,14 @@ func (r *LineReader) PeekLine() (string, error) {
 	return r.peek, r.err
 }
 
+func (r *LineReader) MustPeekLine() string {
+	l, err := r.PeekLine()
+	if err != nil {
+		panic(err)
+	}
+	return l
+}
+
 func (r *LineReader) Advance() {
 	r.peek = ""
 	r.err = nil

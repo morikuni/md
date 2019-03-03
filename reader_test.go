@@ -20,6 +20,9 @@ bbb`))
 	require.NoError(t, err)
 	require.Equal(t, "aaa", l)
 
+	l = r.MustPeekLine()
+	require.Equal(t, "aaa", l)
+
 	r.Advance()
 
 	l, err = r.PeekLine()
