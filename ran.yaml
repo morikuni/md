@@ -1,0 +1,13 @@
+env:
+  GO111MODULE: on
+
+commands:
+  test:
+    description: Run test
+    tasks:
+    - script: go test -v ./...
+
+  mod:
+    description: Update dependency
+    tasks:
+    - script: go mod tidy
