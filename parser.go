@@ -49,23 +49,32 @@ func parse(r *LineReader) ([]Element, error) {
 		}
 
 		if !isParagraph {
-			result = flushParagraph(result, paragraph)
+			result, err = flushParagraph(result, paragraph)
+			if err != nil {
+				return nil, err
+			}
 			paragraph = nil
 		}
 	}
 
-	result = flushParagraph(result, paragraph)
+	var err error
+	result, err = flushParagraph(result, paragraph)
+	if err != nil {
+		return nil, err
+	}
 
 	return result, nil
 }
 
-func flushParagraph(r []Element, paragraph []string) []Element {
+func flushParagraph(r []Element, paragraph []string) ([]Element, error) {
 	if paragraph == nil {
-		return r
+		return r, nil
 	}
-	return append(r, &Paragraph{
-		[]TextElement{Text(strings.Join(paragraph, "\n"))},
-	})
+	p, err := convertParagraph(strings.Join(paragraph, "\n"))
+	if err != nil {
+		return nil, err
+	}
+	return append(r, p), nil
 }
 
 func readCodeBlock(r *LineReader) (cb *CodeBlock, err error) {
@@ -124,4 +133,47 @@ func countLeft(s string, r rune) int {
 		count++
 	}
 	return count
+}
+
+type pState int
+
+const (
+	text pState = iota
+	code
+)
+
+func convertParagraph(paragraph string) (*Paragraph, error) {
+	runes := []rune(paragraph)
+
+	var (
+		from     int
+		state    pState
+		elements []ParagraphElement
+	)
+
+	for i := 0; i < len(runes); i++ {
+		r := runes[i]
+		switch r {
+		case '`':
+			switch state {
+			case text:
+				elements = append(elements, Text(runes[from:i]))
+				state = code
+			case code:
+				elements = append(elements, Code(runes[from:i]))
+				state = text
+			}
+			from = i + 1
+		default:
+		}
+	}
+	if from < len(runes) {
+		switch state {
+		case text:
+			elements = append(elements, Text(runes[from:]))
+		case code:
+			return nil, xerrors.Errorf("code element should be closed around: %q", string(runes[from:]))
+		}
+	}
+	return &Paragraph{elements}, nil
 }

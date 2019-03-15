@@ -18,7 +18,7 @@ type Header struct {
 func (*Header) element() {}
 
 type Paragraph struct {
-	Elements []TextElement
+	Elements []ParagraphElement
 }
 
 func (*Paragraph) element() {}
@@ -30,11 +30,11 @@ type CodeBlock struct {
 
 func (*CodeBlock) element() {}
 
-type TextElement interface {
+type ParagraphElement interface {
 	textElement()
 }
 
-var _ = []TextElement{
+var _ = []ParagraphElement{
 	Text(""),
 	Code(""),
 }
