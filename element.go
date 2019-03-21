@@ -24,8 +24,8 @@ type Paragraph struct {
 func (*Paragraph) element() {}
 
 type CodeBlock struct {
-	Code     string
 	Language string
+	Code     string
 }
 
 func (*CodeBlock) element() {}
