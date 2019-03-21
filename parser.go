@@ -13,8 +13,7 @@ func Parse(r io.Reader) ([]Element, error) {
 
 func parse(r *LineReader) ([]Element, error) {
 	var (
-		result    []Element
-		paragraph []string
+		result []Element
 	)
 	for {
 		line, err := r.PeekLine()
@@ -25,17 +24,16 @@ func parse(r *LineReader) ([]Element, error) {
 			return nil, err
 		}
 
-		isParagraph := false
 		switch {
 		case len(line) == 0:
 			// ignore
 			r.Advance()
 		case line[0] == '#': // header
-			cb, err := readHeader(r)
+			h, err := readHeader(r)
 			if err != nil {
 				return nil, err
 			}
-			result = append(result, cb)
+			result = append(result, h)
 		case strings.HasPrefix(line, "```"): // code block
 			cb, err := readCodeBlock(r)
 			if err != nil {
@@ -43,41 +41,18 @@ func parse(r *LineReader) ([]Element, error) {
 			}
 			result = append(result, cb)
 		default: // paragraph
-			isParagraph = true
-			paragraph = append(paragraph, line)
-			r.Advance()
-		}
-
-		if !isParagraph {
-			result, err = flushParagraph(result, paragraph)
+			p, err := readParagraph(r)
 			if err != nil {
 				return nil, err
 			}
-			paragraph = nil
+			result = append(result, p)
 		}
-	}
-
-	var err error
-	result, err = flushParagraph(result, paragraph)
-	if err != nil {
-		return nil, err
 	}
 
 	return result, nil
 }
 
-func flushParagraph(r []Element, paragraph []string) ([]Element, error) {
-	if paragraph == nil {
-		return r, nil
-	}
-	p, err := convertParagraph(strings.Join(paragraph, "\n"))
-	if err != nil {
-		return nil, err
-	}
-	return append(r, p), nil
-}
-
-func readCodeBlock(r *LineReader) (cb *CodeBlock, err error) {
+func readCodeBlock(r *LineReader) (*CodeBlock, error) {
 	lang := strings.TrimLeft(r.MustPeekLine(), "`")
 	r.Advance()
 
@@ -95,12 +70,12 @@ func readCodeBlock(r *LineReader) (cb *CodeBlock, err error) {
 	}
 
 	return &CodeBlock{
-		strings.Join(codes, "\n"),
 		lang,
+		strings.Join(codes, "\n"),
 	}, nil
 }
 
-func readHeader(r *LineReader) (cb *Header, err error) {
+func readHeader(r *LineReader) (*Header, error) {
 	level := countLeft(r.MustPeekLine(), '#')
 
 	var headers []string
@@ -133,6 +108,25 @@ func countLeft(s string, r rune) int {
 		count++
 	}
 	return count
+}
+
+func readParagraph(r *LineReader) (*Paragraph, error) {
+	var lines []string
+	for {
+		line, err := r.PeekLine()
+		if xerrors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		if line == "" {
+			break
+		}
+		r.Advance()
+		lines = append(lines, line)
+	}
+	return convertParagraph(strings.Join(lines, "\n"))
 }
 
 type pState int
