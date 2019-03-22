@@ -21,7 +21,8 @@ func TestParse(t *testing.T) {
 			"1.md",
 
 			[]Element{
-				&Header{Level: 1, Text: "aaa"},
+				&Header{Level: 1, Text: "aaa\nbbb"},
+				&Header{Level: 2, Text: "ccc"},
 				&Paragraph{Elements: []ParagraphElement{
 					Text("paragraph1"), Code("code"),
 					Text("\nparagraph2"),
