@@ -8,6 +8,7 @@ var _ = []Element{
 	(*Header)(nil),
 	(*Paragraph)(nil),
 	(*CodeBlock)(nil),
+	(*List)(nil),
 }
 
 type Header struct {
@@ -17,18 +18,29 @@ type Header struct {
 
 func (*Header) element() {}
 
-type Paragraph struct {
-	Elements []ParagraphElement
-}
-
-func (*Paragraph) element() {}
-
 type CodeBlock struct {
 	Language string
 	Code     string
 }
 
 func (*CodeBlock) element() {}
+
+type List struct {
+	Elements []*ListElement
+}
+
+func (*List) element() {}
+
+type ListElement struct {
+	Level int
+	Text  string
+}
+
+type Paragraph struct {
+	Elements []ParagraphElement
+}
+
+func (*Paragraph) element() {}
 
 type ParagraphElement interface {
 	textElement()

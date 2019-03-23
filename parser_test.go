@@ -25,8 +25,15 @@ func TestParse(t *testing.T) {
 				&Header{Level: 2, Text: "ccc"},
 				&Paragraph{Elements: []ParagraphElement{
 					Text("paragraph1"), Code("code"),
-					Text("\nparagraph2"),
+					Text("\nparagraph2\n- paragraph5"),
 				}},
+				&List{
+					Elements: []*ListElement{
+						{1, "l1"},
+						{2, "l2"},
+						{1, "l3"},
+					},
+				},
 				&CodeBlock{
 					Language: "go",
 					Code: `func main() {

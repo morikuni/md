@@ -25,7 +25,7 @@ func parse(r *LineReader) ([]Element, error) {
 		}
 
 		switch {
-		case len(line) == 0:
+		case isEmpty(line):
 			// ignore
 			r.Advance()
 		case line[0] == '#': // header
@@ -40,6 +40,12 @@ func parse(r *LineReader) ([]Element, error) {
 				return nil, err
 			}
 			result = append(result, cb)
+		case strings.HasPrefix(strings.TrimLeft(line, " \t"), "-"):
+			li, err := readList(r)
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, li)
 		default: // paragraph
 			p, err := readParagraph(r)
 			if err != nil {
@@ -50,29 +56,6 @@ func parse(r *LineReader) ([]Element, error) {
 	}
 
 	return result, nil
-}
-
-func readCodeBlock(r *LineReader) (*CodeBlock, error) {
-	lang := strings.TrimLeft(r.MustPeekLine(), "`")
-	r.Advance()
-
-	var codes []string
-	for {
-		line, err := r.PeekLine()
-		if err != nil {
-			return nil, err
-		}
-		r.Advance()
-		if line == "```" {
-			break
-		}
-		codes = append(codes, line)
-	}
-
-	return &CodeBlock{
-		lang,
-		strings.Join(codes, "\n"),
-	}, nil
 }
 
 func readHeader(r *LineReader) (*Header, error) {
@@ -99,15 +82,51 @@ func readHeader(r *LineReader) (*Header, error) {
 	}, nil
 }
 
-func countLeft(s string, r rune) int {
-	var count int
-	for _, sr := range s {
-		if sr != r {
-			return count
+func readCodeBlock(r *LineReader) (*CodeBlock, error) {
+	lang := strings.TrimLeft(r.MustPeekLine(), "`")
+	r.Advance()
+
+	var codes []string
+	for {
+		line, err := r.PeekLine()
+		if err != nil {
+			return nil, err
 		}
-		count++
+		r.Advance()
+		if line == "```" {
+			break
+		}
+		codes = append(codes, line)
 	}
-	return count
+
+	return &CodeBlock{
+		lang,
+		strings.Join(codes, "\n"),
+	}, nil
+}
+
+func readList(r *LineReader) (*List, error) {
+	var elements []*ListElement
+	for {
+		line, err := r.PeekLine()
+		if xerrors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		if isEmpty(line) {
+			break
+		}
+		r.Advance()
+		level := countLeft(line, ' ')/2 + countLeft(line, '\t') + 1
+		text := strings.TrimLeft(line, " \t-")
+		elements = append(elements, &ListElement{
+			level,
+			text,
+		})
+	}
+	return &List{elements}, nil
 }
 
 func readParagraph(r *LineReader) (*Paragraph, error) {
@@ -120,7 +139,7 @@ func readParagraph(r *LineReader) (*Paragraph, error) {
 		if err != nil {
 			return nil, err
 		}
-		if line == "" {
+		if isEmpty(line) {
 			break
 		}
 		r.Advance()
