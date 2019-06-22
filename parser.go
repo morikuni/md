@@ -115,7 +115,7 @@ func readList(r *lineReader) (*List, error) {
 		if err != nil {
 			return nil, err
 		}
-		if isEmpty(line) {
+		if !strings.HasPrefix(strings.TrimLeft(line, " \t"), "-") {
 			break
 		}
 		r.Advance()
