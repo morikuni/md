@@ -7,17 +7,17 @@ import (
 	"golang.org/x/xerrors"
 )
 
-type LineReader struct {
+type lineReader struct {
 	r    *bufio.Scanner
 	peek string
 	err  error
 }
 
-func NewLineReader(r io.Reader) *LineReader {
-	return &LineReader{bufio.NewScanner(r), "", nil}
+func NewLineReader(r io.Reader) *lineReader {
+	return &lineReader{bufio.NewScanner(r), "", nil}
 }
 
-func (r *LineReader) PeekLine() (string, error) {
+func (r *lineReader) PeekLine() (string, error) {
 	if r.peek != "" || r.err != nil {
 		return r.peek, r.err
 	}
@@ -25,7 +25,7 @@ func (r *LineReader) PeekLine() (string, error) {
 	return r.peek, r.err
 }
 
-func (r *LineReader) MustPeekLine() string {
+func (r *lineReader) MustPeekLine() string {
 	l, err := r.PeekLine()
 	if err != nil {
 		panic(err)
@@ -33,12 +33,12 @@ func (r *LineReader) MustPeekLine() string {
 	return l
 }
 
-func (r *LineReader) Advance() {
+func (r *lineReader) Advance() {
 	r.peek = ""
 	r.err = nil
 }
 
-func (r *LineReader) readLine() (string, error) {
+func (r *lineReader) readLine() (string, error) {
 	if !r.r.Scan() {
 		if err := r.r.Err(); err != nil {
 			return "", xerrors.Errorf("read line: %w", err)

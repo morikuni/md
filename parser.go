@@ -11,7 +11,7 @@ func Parse(r io.Reader) ([]Element, error) {
 	return parse(NewLineReader(r))
 }
 
-func parse(r *LineReader) ([]Element, error) {
+func parse(r *lineReader) ([]Element, error) {
 	var (
 		result []Element
 	)
@@ -58,7 +58,7 @@ func parse(r *LineReader) ([]Element, error) {
 	return result, nil
 }
 
-func readHeader(r *LineReader) (*Header, error) {
+func readHeader(r *lineReader) (*Header, error) {
 	level := countLeft(r.MustPeekLine(), '#')
 
 	var headers []string
@@ -82,7 +82,7 @@ func readHeader(r *LineReader) (*Header, error) {
 	}, nil
 }
 
-func readCodeBlock(r *LineReader) (*CodeBlock, error) {
+func readCodeBlock(r *lineReader) (*CodeBlock, error) {
 	lang := strings.TrimLeft(r.MustPeekLine(), "`")
 	r.Advance()
 
@@ -105,7 +105,7 @@ func readCodeBlock(r *LineReader) (*CodeBlock, error) {
 	}, nil
 }
 
-func readList(r *LineReader) (*List, error) {
+func readList(r *lineReader) (*List, error) {
 	var elements []*ListElement
 	for {
 		line, err := r.PeekLine()
@@ -129,7 +129,7 @@ func readList(r *LineReader) (*List, error) {
 	return &List{elements}, nil
 }
 
-func readParagraph(r *LineReader) (*Paragraph, error) {
+func readParagraph(r *lineReader) (*Paragraph, error) {
 	var lines []string
 	for {
 		line, err := r.PeekLine()
