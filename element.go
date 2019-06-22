@@ -9,6 +9,7 @@ var _ = []Element{
 	(*Paragraph)(nil),
 	(*CodeBlock)(nil),
 	(*List)(nil),
+	(*Quote)(nil),
 }
 
 type Header struct {
@@ -58,3 +59,9 @@ func (Text) textElement() {}
 type Code string
 
 func (Code) textElement() {}
+
+type Quote struct {
+	Text string
+}
+
+func (*Quote) element() {}

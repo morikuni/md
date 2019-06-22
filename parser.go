@@ -28,13 +28,13 @@ func parse(r *lineReader) ([]Element, error) {
 		case isEmpty(line):
 			// ignore
 			r.Advance()
-		case line[0] == '#': // header
+		case line[0] == '#':
 			h, err := readHeader(r)
 			if err != nil {
 				return nil, err
 			}
 			result = append(result, h)
-		case strings.HasPrefix(line, "```"): // code block
+		case strings.HasPrefix(line, "```"):
 			cb, err := readCodeBlock(r)
 			if err != nil {
 				return nil, err
@@ -46,7 +46,13 @@ func parse(r *lineReader) ([]Element, error) {
 				return nil, err
 			}
 			result = append(result, li)
-		default: // paragraph
+		case strings.HasPrefix(line, ">"):
+			cb, err := readQuote(r)
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, cb)
+		default:
 			p, err := readParagraph(r)
 			if err != nil {
 				return nil, err
@@ -189,4 +195,25 @@ func convertParagraph(paragraph string) (*Paragraph, error) {
 		}
 	}
 	return &Paragraph{elements}, nil
+}
+
+func readQuote(r *lineReader) (*Quote, error) {
+	var lines []string
+	for {
+		line, err := r.PeekLine()
+		if xerrors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		if !strings.HasPrefix(line, ">") {
+			break
+		}
+		r.Advance()
+		text := strings.TrimLeft(line, "> ")
+		r.Advance()
+		lines = append(lines, text)
+	}
+	return &Quote{strings.Join(lines, "\n")}, nil
 }

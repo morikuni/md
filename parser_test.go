@@ -41,6 +41,7 @@ func TestParse(t *testing.T) {
 }`,
 				},
 				&Paragraph{Elements: []ParagraphElement{Text("paragraph3")}},
+				&Quote{Text: "quote1\nquote2"},
 				&Paragraph{Elements: []ParagraphElement{Text("paragraph4")}},
 			},
 			false,
