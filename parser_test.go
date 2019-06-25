@@ -23,7 +23,7 @@ func TestParse(t *testing.T) {
 			[]Element{
 				&Header{Level: 1, Text: "aaa\nbbb"},
 				&Header{Level: 2, Text: "ccc"},
-				&Paragraph{Elements: []ParagraphElement{
+				&Paragraph{Elements: []TextElement{
 					Text("paragraph1"), Code("code"),
 					Text("\nparagraph2\n- paragraph5"),
 				}},
@@ -40,17 +40,19 @@ func TestParse(t *testing.T) {
 	fmt.Println()
 }`,
 				},
-				&Paragraph{Elements: []ParagraphElement{Text("paragraph3")}},
+				&Paragraph{Elements: []TextElement{Text("paragraph3")}},
 				&Quote{Text: "quote1\nquote2"},
-				&Paragraph{Elements: []ParagraphElement{Text("paragraph4")}},
+				&Paragraph{Elements: []TextElement{Text("paragraph4")}},
 			},
 			false,
 		},
 		"code element is not closed": {
 			"2.md",
 
-			nil,
-			true,
+			[]Element{
+				&Paragraph{Elements: []TextElement{Text("paragraph1code\nparagraph2")}},
+			},
+			false,
 		},
 	}
 

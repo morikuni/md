@@ -2,7 +2,9 @@ package md
 
 import (
 	"io"
+	"regexp"
 	"strings"
+	"unicode/utf8"
 
 	"golang.org/x/xerrors"
 )
@@ -151,50 +153,58 @@ func readParagraph(r *lineReader) (*Paragraph, error) {
 		r.Advance()
 		lines = append(lines, line)
 	}
-	return convertParagraph(strings.Join(lines, "\n"))
+
+	tes, err := parseTextElement(strings.Join(lines, "\n"))
+	if err != nil {
+		return nil, err
+	}
+	return &Paragraph{tes}, nil
 }
 
-type pState int
-
-const (
-	text pState = iota
-	code
+var (
+	reCode = regexp.MustCompile("\\A`(.*)[^\\\\]`")
 )
 
-func convertParagraph(paragraph string) (*Paragraph, error) {
-	runes := []rune(paragraph)
+func parseTextElement(paragraph string) ([]TextElement, error) {
+	data := []byte(paragraph)
 
 	var (
-		from     int
-		state    pState
-		elements []ParagraphElement
+		elements []TextElement
+		last     rune
 	)
 
-	for i := 0; i < len(runes); i++ {
-		r := runes[i]
-		switch r {
-		case '`':
-			switch state {
-			case text:
-				elements = append(elements, Text(runes[from:i]))
-				state = code
-			case code:
-				elements = append(elements, Code(runes[from:i]))
-				state = text
+	var text []byte
+	flush := func() {
+		if len(text) == 0 {
+			return
+		}
+		elements = append(elements, Text(text))
+		text = text[:0]
+	}
+	for len(data) > 0 {
+		r, size := utf8.DecodeRune(data)
+		switch {
+		case r == '`' && last != '\\':
+			idx := reCode.FindSubmatchIndex(data)
+			if len(idx) == 0 {
+				break
 			}
-			from = i + 1
+			flush()
+			from, to := idx[2], idx[3]
+			size = idx[1]
+			// +1 for a character matched to [^\\\\]
+			elements = append(elements, Code(data[from:to+1]))
+		case r == '\\' && last == '\\':
+			fallthrough
 		default:
+			text = append(text, data[:size]...)
 		}
+		last = r
+		data = data[size:]
 	}
-	if from < len(runes) {
-		switch state {
-		case text:
-			elements = append(elements, Text(runes[from:]))
-		case code:
-			return nil, xerrors.Errorf("code element should be closed around: %q", string(runes[from:]))
-		}
-	}
-	return &Paragraph{elements}, nil
+	flush()
+
+	return elements, nil
 }
 
 func readQuote(r *lineReader) (*Quote, error) {

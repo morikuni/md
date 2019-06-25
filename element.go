@@ -38,16 +38,16 @@ type ListElement struct {
 }
 
 type Paragraph struct {
-	Elements []ParagraphElement
+	Elements []TextElement
 }
 
 func (*Paragraph) element() {}
 
-type ParagraphElement interface {
+type TextElement interface {
 	textElement()
 }
 
-var _ = []ParagraphElement{
+var _ = []TextElement{
 	Text(""),
 	Code(""),
 }
