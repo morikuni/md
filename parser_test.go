@@ -40,7 +40,11 @@ func TestParse(t *testing.T) {
 	fmt.Println()
 }`,
 				},
-				&Paragraph{&TextBlock{[]TextElement{Text("paragraph3")}}},
+				&Paragraph{&TextBlock{[]TextElement{
+					Text("paragraph3"),
+					Link{"link", "https://link.test"},
+					Text("aaa"),
+				}}},
 				&Quote{Text: "quote1\nquote2"},
 				&Paragraph{&TextBlock{[]TextElement{Text("paragraph4")}}},
 			},

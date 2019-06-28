@@ -54,6 +54,7 @@ type TextElement interface {
 var _ = []TextElement{
 	Text(""),
 	Code(""),
+	Link{},
 }
 
 type Text string
@@ -63,6 +64,13 @@ func (Text) textElement() {}
 type Code string
 
 func (Code) textElement() {}
+
+type Link struct {
+	Text      string
+	Reference string
+}
+
+func (Link) textElement() {}
 
 type Quote struct {
 	Text string

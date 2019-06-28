@@ -1,6 +1,7 @@
 package md
 
 import (
+	"fmt"
 	"io"
 	"regexp"
 	"strings"
@@ -163,6 +164,7 @@ func readParagraph(r *lineReader) (*Paragraph, error) {
 
 var (
 	reCode = regexp.MustCompile("\\A`(.*)[^\\\\]`")
+	reLink = regexp.MustCompile(`\A\[(.+)\]\((.+)\)`)
 )
 
 func parseTextBlock(paragraph string) (*TextBlock, error) {
@@ -190,7 +192,7 @@ func parseTextBlock(paragraph string) (*TextBlock, error) {
 	for len(data) > 0 {
 		r, size := utf8.DecodeRune(data)
 		switch {
-		case last == '\\' && strings.ContainsAny(string(r), "`\\"):
+		case last == '\\' && strings.ContainsAny(string(r), "`\\["):
 			dropRight()
 			fallthrough
 		default:
@@ -205,6 +207,17 @@ func parseTextBlock(paragraph string) (*TextBlock, error) {
 			size = idx[1]
 			// +1 for a character matched to [^\\\\]
 			elements = append(elements, Code(data[from:to+1]))
+		case r == '[':
+			idx := reLink.FindSubmatchIndex(data)
+			fmt.Println(idx)
+			if len(idx) == 0 {
+				break
+			}
+			flush()
+			text := data[idx[2]:idx[3]]
+			ref := data[idx[4]:idx[5]]
+			size = idx[1]
+			elements = append(elements, Link{string(text), string(ref)})
 		}
 		last = r
 		data = data[size:]
