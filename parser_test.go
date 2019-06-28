@@ -23,10 +23,10 @@ func TestParse(t *testing.T) {
 			[]Element{
 				&Header{Level: 1, Text: "aaa\nbbb"},
 				&Header{Level: 2, Text: "ccc"},
-				&Paragraph{Elements: []TextElement{
+				&Paragraph{&TextBlock{[]TextElement{
 					Text("paragraph1"), Code("code"),
 					Text("\nparagraph2\n- paragraph5"),
-				}},
+				}}},
 				&List{
 					Elements: []*ListElement{
 						{1, "l1"},
@@ -40,9 +40,9 @@ func TestParse(t *testing.T) {
 	fmt.Println()
 }`,
 				},
-				&Paragraph{Elements: []TextElement{Text("paragraph3")}},
+				&Paragraph{&TextBlock{[]TextElement{Text("paragraph3")}}},
 				&Quote{Text: "quote1\nquote2"},
-				&Paragraph{Elements: []TextElement{Text("paragraph4")}},
+				&Paragraph{&TextBlock{[]TextElement{Text("paragraph4")}}},
 			},
 			false,
 		},
@@ -50,7 +50,7 @@ func TestParse(t *testing.T) {
 			"2.md",
 
 			[]Element{
-				&Paragraph{Elements: []TextElement{Text("paragraph1code\nparagraph2")}},
+				&Paragraph{&TextBlock{[]TextElement{Text("paragraph1code\nparagraph2")}}},
 			},
 			false,
 		},

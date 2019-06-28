@@ -154,7 +154,7 @@ func readParagraph(r *lineReader) (*Paragraph, error) {
 		lines = append(lines, line)
 	}
 
-	tes, err := parseTextElement(strings.Join(lines, "\n"))
+	tes, err := parseTextBlock(strings.Join(lines, "\n"))
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +165,7 @@ var (
 	reCode = regexp.MustCompile("\\A`(.*)[^\\\\]`")
 )
 
-func parseTextElement(paragraph string) ([]TextElement, error) {
+func parseTextBlock(paragraph string) (*TextBlock, error) {
 	data := []byte(paragraph)
 
 	var (
@@ -204,7 +204,7 @@ func parseTextElement(paragraph string) ([]TextElement, error) {
 	}
 	flush()
 
-	return elements, nil
+	return &TextBlock{elements}, nil
 }
 
 func readQuote(r *lineReader) (*Quote, error) {
