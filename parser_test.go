@@ -25,7 +25,7 @@ func TestParse(t *testing.T) {
 				&Header{Level: 2, Text: "ccc"},
 				&Paragraph{&TextBlock{[]TextElement{
 					Text("paragraph1"), Code("code"),
-					Text("\nparagraph2\n- paragraph5"),
+					Text("\nparagraph2`code`\n- paragraph5"),
 				}}},
 				&List{
 					Elements: []*ListElement{

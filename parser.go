@@ -181,10 +181,21 @@ func parseTextBlock(paragraph string) (*TextBlock, error) {
 		elements = append(elements, Text(text))
 		text = text[:0]
 	}
+	dropRight := func() {
+		if len(text) == 0 {
+			return
+		}
+		text = text[:len(text)-1]
+	}
 	for len(data) > 0 {
 		r, size := utf8.DecodeRune(data)
 		switch {
-		case r == '`' && last != '\\':
+		case last == '\\' && strings.ContainsAny(string(r), "`\\"):
+			dropRight()
+			fallthrough
+		default:
+			text = append(text, data[:size]...)
+		case r == '`':
 			idx := reCode.FindSubmatchIndex(data)
 			if len(idx) == 0 {
 				break
@@ -194,10 +205,6 @@ func parseTextBlock(paragraph string) (*TextBlock, error) {
 			size = idx[1]
 			// +1 for a character matched to [^\\\\]
 			elements = append(elements, Code(data[from:to+1]))
-		case r == '\\' && last == '\\':
-			fallthrough
-		default:
-			text = append(text, data[:size]...)
 		}
 		last = r
 		data = data[size:]
