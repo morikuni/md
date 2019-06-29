@@ -163,8 +163,8 @@ func readParagraph(r *lineReader) (*Paragraph, error) {
 }
 
 var (
-	reCode = regexp.MustCompile("\\A`(.*)[^\\\\]`")
-	reLink = regexp.MustCompile(`\A\[(.+)\]\((.+)\)`)
+	reCode = regexp.MustCompile("\\A`(.*?)[^\\\\]`")
+	reLink = regexp.MustCompile(`\A\[(.+?)\]\((.+?)\)`)
 )
 
 func parseTextBlock(paragraph string) (*TextBlock, error) {
