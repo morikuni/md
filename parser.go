@@ -1,7 +1,6 @@
 package md
 
 import (
-	"fmt"
 	"io"
 	"regexp"
 	"strings"
@@ -115,7 +114,7 @@ func readCodeBlock(r *lineReader) (*CodeBlock, error) {
 }
 
 func readList(r *lineReader) (*List, error) {
-	var elements []*ListElement
+	var elements []ListElement
 	for {
 		line, err := r.PeekLine()
 		if xerrors.Is(err, io.EOF) {
@@ -130,7 +129,7 @@ func readList(r *lineReader) (*List, error) {
 		r.Advance()
 		level := countLeft(line, ' ')/2 + countLeft(line, '\t') + 1
 		text := strings.TrimLeft(line, " \t-")
-		elements = append(elements, &ListElement{
+		elements = append(elements, ListElement{
 			level,
 			text,
 		})
@@ -209,7 +208,6 @@ func parseTextBlock(paragraph string) (*TextBlock, error) {
 			elements = append(elements, Code(data[from:to+1]))
 		case r == '[':
 			idx := reLink.FindSubmatchIndex(data)
-			fmt.Println(idx)
 			if len(idx) == 0 {
 				break
 			}

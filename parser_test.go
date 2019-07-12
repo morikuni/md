@@ -31,7 +31,7 @@ func TestParse(t *testing.T) {
 					Text("\nparagraph2`code`\n- paragraph5"),
 				}}},
 				&List{
-					Elements: []*ListElement{
+					Elements: []ListElement{
 						{1, "l1"},
 						{2, "l2"},
 						{1, "l3"},
